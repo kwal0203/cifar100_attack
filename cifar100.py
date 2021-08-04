@@ -84,6 +84,7 @@ type_list = [tf.cast(0, tf.bool)] * 5
 mal_list = [mal_train.create_tf_dataset_for_client(666)] * 5
 total = time.time()
 running = 0.0
+# lads
 norms = [[], [], [], [], []]
 for i in range(5):
   round_time = time.time()
