@@ -566,6 +566,27 @@ class ClientProjectBoost:
       aggregated_outputs = model.report_local_outputs()
 
       return weights_delta_benign, aggregated_outputs, num_examples_sum
+    
+    @tf.function
+    def compute_benign_update_mal():
+      """compute benign update sent back to the server."""
+      tf.nest.map_structure(lambda a, b: a.assign(b), model_weights,
+                            initial_weights)
+
+      num_examples_sum = benign_dataset.reduce(
+          initial_state=tf.constant(0), reduce_func=reduce_fn)
+      benign_dataset.reduce(
+          initial_state=tf.constant(0), reduce_func=reduce_fn)
+      benign_dataset.reduce(
+          initial_state=tf.constant(0), reduce_func=reduce_fn)
+
+      weights_delta_benign = tf.nest.map_structure(lambda a, b: a - b,
+                                                   model_weights.trainable,
+                                                   initial_weights.trainable)
+
+      aggregated_outputs = model.report_local_outputs()
+
+      return weights_delta_benign, aggregated_outputs, num_examples_sum
 
     @tf.function
     def compute_malicious_update():
@@ -596,7 +617,8 @@ class ClientProjectBoost:
       return weights_delta, aggregated_outputs, num_examples_sum
 
     if client_is_malicious:
-      result = compute_malicious_update()
+      # result = compute_malicious_update()
+      result = compute_benign_update_mal()
     else:
       result = compute_benign_update()
     weights_delta, aggregated_outputs, num_examples_sum = result

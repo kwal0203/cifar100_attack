@@ -80,23 +80,28 @@ dummy_model.compile(
 test_client = test.create_tf_dataset_for_client(train.client_ids[0])
 test_mal_client = mal_test.create_tf_dataset_for_client(666)
 metric = tf.keras.metrics.SparseCategoricalAccuracy()
-type_list = [tf.cast(0, tf.bool)] * 5
+# type_list = [tf.cast(0, tf.bool)] * 5
+type_list = [tf.cast(0, tf.bool)] * 4
+type_list += [tf.cast(1, tf.bool)]
 mal_list = [mal_train.create_tf_dataset_for_client(666)] * 5
 total = time.time()
 running = 0.0
-# lads
 norms = [[], [], [], [], []]
-for i in range(5):
+for i in range(500):
   round_time = time.time()
 
   # Training
   data_ids = np.random.choice(a=train.client_ids[:5], size=5)
   data = [train.create_tf_dataset_for_client(i) for i in data_ids]
   state, metrics, output = iterative_process.next(state, data, mal_list, type_list)
+  
+  the_sum = 0.0
+  for idx, val in enumerate(output):
+    print(f"Norms: {val['weight_norm'].numpy():.3f}")
+    norms[idx].append(val['weight_norm'].numpy())
+    the_sum += val['weight_norm'].numpy()
 
-  for idx, i in enumerate(output):
-    print(f"Norms: {i['weight_norm'].numpy():.3f}")
-    norms[idx].append(i['weight_norm'].numpy())
+  print(f"Average norm: {(the_sum / 5):.3f}")
 
   # Timing
   timer = time.time() - round_time
@@ -115,5 +120,11 @@ for i in range(5):
   print(f"Test accuracy:  {test_acc:.3f}")
   print(f"Mal accuracy:   {mal_acc:.3f}")
   print(f"Average time:   {average:.2f}")
+
+for list in norms:
+  print(f"Max: {max(list):.3f}")
+  print(f"Min: {min(list):.3f}")
+  print(f"Avg: {(sum(list) / len(list)):.3f}")
+  print()
 print(f"Training took {time.time()-total:.2f} seconds")
 
