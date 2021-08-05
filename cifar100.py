@@ -6,6 +6,7 @@ import numpy as np
 import model
 import data
 import time
+import csv
 import sys
 
 
@@ -87,8 +88,10 @@ mal_list = [mal_train.create_tf_dataset_for_client(666)] * 5
 total = time.time()
 running = 0.0
 norms = [[], [], [], [], []]
-for i in range(500):
+round_stats = []
+for i in range(5):
   round_time = time.time()
+  _round_stats = []
 
   # Training
   data_ids = np.random.choice(a=train.client_ids[:5], size=5)
@@ -120,6 +123,21 @@ for i in range(500):
   print(f"Test accuracy:  {test_acc:.3f}")
   print(f"Mal accuracy:   {mal_acc:.3f}")
   print(f"Average time:   {average:.2f}")
+  _round_stats.append(i)
+  _round_stats.append(loss)
+  _round_stats.append(train_acc)
+  _round_stats.append(test_acc.numpy())
+  _round_stats.append(mal_acc.numpy())
+  _round_stats.append(the_sum / 5)
+  round_stats.append(_round_stats)
+
+  with open('/home/kane/test/sun/cifar100/round_stats.csv', 'a') as f:
+    writer = csv.writer(f, delimiter=',')
+    writer.writerow(_round_stats)
+
+  with open('/home/kane/test/sun/cifar100/round_norms.csv', 'a') as f:
+    writer = csv.writer(f, delimiter=',')
+    writer.writerow(round_norms)
 
 for list in norms:
   print(f"Max: {max(list):.3f}")
