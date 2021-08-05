@@ -99,11 +99,12 @@ for i in range(5):
   state, metrics, output = iterative_process.next(state, data, mal_list, type_list)
   
   the_sum = 0.0
+  round_norms = []
   for idx, val in enumerate(output):
     print(f"Norms: {val['weight_norm'].numpy():.3f}")
     norms[idx].append(val['weight_norm'].numpy())
     the_sum += val['weight_norm'].numpy()
-
+    round_norms.append(val['weight_norm'].numpy())
   print(f"Average norm: {(the_sum / 5):.3f}")
 
   # Timing
